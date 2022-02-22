@@ -1,0 +1,45 @@
+All the information is from: https://www.youtube.com/watch?v=YjmGKnQmKYY  and  https://www.youtube.com/watch?v=YjmGKnQmKYY&t
+
+1- download and install geth from: https://geth.ethereum.org/downloads/
+2- in powershell type "geth version"
+3- download and install ganache from: https://trufflesuite.com/ganache/
+4- change Ganache port from 8545 to 9545 in the setting page to avoid conflict with ether servers.
+5- download and install ndoejs and npm from: https://nodejs.org/en/
+6- in powershell type "node -v" 
+7- in powershell type "npm -v"
+8- in powershell type "npm uninstall -g truffle"
+9- in powershell type "npm install -g truffle"
+10- download and install atom from: https://github.com/atom/atom
+11- in powershell type "atom -v"
+12- in powershell type "apm -v"
+13- in powershell type "apm install language-ethereum"
+
+14- in powershell type "mkdir private"
+15- in powershell type "cd private"
+16- in powershell type "puppeth"
+17- choose a name for network
+18- write "2" => 2. Configure new genesis
+19- write "1" => 1. Create new genesis from scratch
+20- write "1" => 1. Ethash - proof-of-work
+21- press Enter => Which accounts should be pre-funded? 0x
+22- in powershell type "yes" => Should the precompile-addresses (0x1 .. 0xff) be pre-funded with 1 wei?
+23- Specify your chain/network ID if you want an explicit one
+24- write "2" => 2. Manage existing genesis
+25- write "2" => 2. Export genesis configurations
+26- press Enter
+27- ctrl + d
+28- in powershell type "geth --datadir . init network_name.json"
+
+29- in powershell type "geth --datadir . account new" => to creat new account
+30- write password for account
+31- repeat password for account
+32- in powershell type "geth --datadir . account list" => to make sure accounts are created
+
+33- in powershell type "atom startnode.cmd"
+34- in atom copy and save the text below: (* all the text must be in "one" line)
+geth --networkid 2022 --mine --miner.threads 1 --datadir "." --nodiscover --maxpeers=2 --allow-insecure-unlock --http --http.port "8545" --port "30303" --http.corsdomain "*" --nat "any" --http.api eth,web3,personal,net --unlock 0 --password ./password.sec
+
+35- in powershell type "atom password.sec"
+36- in atom write your account password and save the file
+
+37- in powershell type "./startnode.cmd"
