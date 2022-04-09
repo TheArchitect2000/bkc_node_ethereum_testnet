@@ -14,6 +14,7 @@ All the information is from: https://www.youtube.com/watch?v=o90L6ksNW6g  and  h
 12- in terminal type "npm uninstall -g truffle"
 13- in terminal type "sudo npm install -g truffle"
 14- in terminal type "truffle version"
+
 15- in terminal type "wget -qO - https://packagecloud.io/AtomEditor/atom/gpgkey | sudo apt-key add -"
 16- in terminal type "sudo sh -c 'echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" > /etc/apt/sources.list.d/atom.list'"
 17- in terminal type "sudo apt update"
@@ -22,8 +23,8 @@ All the information is from: https://www.youtube.com/watch?v=o90L6ksNW6g  and  h
 20- in terminal type "which apm"
 21- in terminal type "apm install language-ethereum"
 
-22- in terminal type "mkdir -p private"
-23- in terminal type "cd private"
+22- in terminal type "mkdir -p privateNode"
+23- in terminal type "cd privateNode"
 24- in terminal type "puppeth"
 25- choose a name for network
 26- write "2" => 2. Configure new genesis
@@ -31,10 +32,7 @@ All the information is from: https://www.youtube.com/watch?v=o90L6ksNW6g  and  h
 28- write "1" => 1. Ethash - proof-of-work
 29- press Enter => Which accounts should be pre-funded? 0x
 30- in terminal type "yes" => Should the precompile-addresses (0x1 .. 0xff) be pre-funded with 1 wei?
-31- Specify your chain/network ID if you want an explicit one
-32- write "2" => 2. Manage existing genesis
-33- write "2" => 2. Export genesis configurations
-34- press Enter
+31- Specify your chain/network ID if you want an ex
 35- ctrl + d
 36- in terminal type "geth --datadir . init network_name.json"
 

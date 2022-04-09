@@ -1,0 +1,43 @@
+cd ~
+mkdir ethereum
+echo 'export ethereum_home=~/ethereum'>>~/.bash_profile
+cd ethereum
+vi $ethereum_home/genesis.json
+(pasre this with cmd v in edit mode)
+{
+    "nonce": "0x0000000000000042",
+    "timestamp": "0x0",
+    "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "extraData": "0x",
+    "gasLimit": "0x8000000",
+    "difficulty": "0x400",
+    "config": {},
+    "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "coinbase": "0x3333333333333333333333333333333333333333",
+    "alloc": {}
+}
+
+Save with esc !:wq
+
+geth --datadir "$ethereum_home/nodeName" init "$ethereum_home/genesis.json"
+geth --datadir "$ethereum_home/nodeName" --port 30304 --nodiscover --networkid 314159 console
+geth --datadir "$ethereum_home/cpvanda" --port 30304 --nodiscover --networkid 314159 console
+
+admin.addPeer("enode://c42ec3cf6c9110b6c46968eb7cb505923e0e555acf8779cad80ce5a853321d3eabed2f6041692c6473ce748ee6c7e026d6df0ef211685550c9025ea7dd185337@104.168.167.219:30304")
+
+personal.newAccount()
+(add password)
+
+
+
+Key commands from the javascript console
+personal.newAccount()
+(add password)
+miner.start(1) - start mining
+eth.blockNumber - current block height
+eth.getBlock(number).miner - miner of block at that number
+eth.getBalance(account address) - current balance of that account
+
+
+
+https://www.youtube.com/watch?v=49KK8MbMggQ
