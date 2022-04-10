@@ -19,25 +19,40 @@ vi $ethereum_home/genesis.json
 
 Save with esc !:wq
 
-geth --datadir "$ethereum_home/nodeName" init "$ethereum_home/genesis.json"
-geth --datadir "$ethereum_home/nodeName" --port 30304 --nodiscover --networkid 314159 console
-geth --datadir "$ethereum_home/cpvanda" --port 30304 --nodiscover --networkid 314159 console
+geth --datadir "$ethereum_home/eth_node" init "$ethereum_home/genesis.json"
 
-admin.addPeer("enode://c42ec3cf6c9110b6c46968eb7cb505923e0e555acf8779cad80ce5a853321d3eabed2f6041692c6473ce748ee6c7e026d6df0ef211685550c9025ea7dd185337@104.168.167.219:30304")
 
-personal.newAccount()
+cd eth_node
+geth --datadir . account new
 (add password)
 
 
+vi $ethereum_home/blocklychain/password.sec
+(write account password)
+Save with esc !:wq
+
+nohup geth --datadir "$ethereum_home/eth_node" --port 30303 --nodiscover --ipcpath "$ethereum_home/eth_node/geth.ipc" --networkid 314159 --mine --miner.threads 1 --unlock 0 --password "$ethereum_home/eth_node/password.sec" 2> "$ethereum_home/geth.log" &
+
+
+admin.addPeer("enode://c42ec3cf6c9110b6c46968eb7cb505923e0e555acf8779cad80ce5a853321d3eabed2f6041692c6473ce748ee6c7e026d6df0ef211685550c9025ea7dd185337@104.168.167.219:30304")
+(sample of adding peer)
 
 Key commands from the javascript console
 personal.newAccount()
 (add password)
-miner.start(1) - start mining
+miner.start(1) - start mining on <1> thread
 eth.blockNumber - current block height
 eth.getBlock(number).miner - miner of block at that number
 eth.getBalance(account address) - current balance of that account
 
+#check background geth process
+ps aux | grep geth
+kill -9 <process ID>
 
+
+to open the ethereum consol from new terminal:
+geth attach ipc:$ethereum_home/blocklychain/geth.ipc
+geth attach ipc:$ethereum_home/cpvanda/geth.ipc
+geth attach ipc:$ethereum_home/eth_node/geth.ipc
 
 https://www.youtube.com/watch?v=49KK8MbMggQ
