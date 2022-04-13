@@ -1,6 +1,7 @@
 cd ~
 mkdir ethereum
 echo 'export ethereum_home=~/ethereum'>>~/.bash_profile
+~/.bash_profile
 cd ethereum
 vi $ethereum_home/genesis.json
 (pasre this with cmd v in edit mode)
