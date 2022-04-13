@@ -28,7 +28,7 @@ geth --datadir . account new
 (add password)
 
 
-vi $ethereum_home/blocklychain/password.sec
+vi $ethereum_home/eth_node/password.sec
 (write account password)
 Save with esc !:wq
 
