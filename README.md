@@ -135,8 +135,11 @@ or
 $ geth attach ipc:$ethereum_home/<YOUR NODE>/geth.ipc
 ```
 ## 3- Some commands for ethereum consol
-> admin
-> admin.peers
-
+```e2
+$ admin
+```
+```e2
+$ admin.peers
+```
 
 
