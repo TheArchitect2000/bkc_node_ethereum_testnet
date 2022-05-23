@@ -33,6 +33,7 @@ vi $ethereum_home/eth_node/password.sec
 Save with esc !:wq
 
 nohup geth --datadir "$ethereum_home/eth_node" --port 30303 --nodiscover --ipcpath "$ethereum_home/eth_node/geth.ipc" --networkid 314159 --mine --miner.threads 1 --unlock 0 --password "$ethereum_home/eth_node/password.sec" 2> "$ethereum_home/geth.log" &
+nohup geth --datadir "$ethereum_home/cpvanda" --port 30304 --nodiscover --ipcpath "$ethereum_home/cpvanda/geth.ipc" --networkid 314159 --mine --miner.threads 1 --unlock 0 --password "$ethereum_home/cpvanda/password.sec" 2> "$ethereum_home/geth.log" &
 
 
 admin.addPeer("enode://c42ec3cf6c9110b6c46968eb7cb505923e0e555acf8779cad80ce5a853321d3eabed2f6041692c6473ce748ee6c7e026d6df0ef211685550c9025ea7dd185337@104.168.167.219:30304")
