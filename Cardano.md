@@ -1,6 +1,7 @@
+<header>
 <H1>Cardano Stake Pool </H1>
-<H6>These are steps to create *Cardano Stake Pool*.</H6>
-___
+<H3>These are steps to create Cardano Stake Pool.</H3>
+</header>
 
 ## How to build cardano Relay server
 
