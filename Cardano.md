@@ -211,6 +211,21 @@ Replace `<relay IP>` with Relay server IP Address.
 
 
 ## 3. Creating *Key Pairs*, *Addresses* and *Certifications*
+> **Warning**
+> ### Basic core node firewall configuration:
+> - Make sure you can only login with SSH Keys, not password.
+> - Make sure you cannot login as root
+> - Make sure to setup SSH connections in a port different than the default 22
+> - Make sure to configure the firewall to only allow connections from your relay nodes by setting up their ip addresses.
+> ### Basic relay node firewall configuration:
+> - Make sure you can only login with SSH Keys, not password.
+> - Make sure you cannot login as root
+> - Make sure to setup SSH connections in a port different than the default 22.
+> - Make sure you only have the strictly necessary ports opened.
+> See Firewall Additional Materials from [Amazon](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html) and [Ubuntu](http://manpages.ubuntu.com/manpages/focal/man8/ufw.8.html)
+
+
+
 ### Create a new directory to store files
 ```
 cd ~
@@ -218,28 +233,84 @@ mkdir keys
 cd keys
 ```
 
-```
-export CARDANO_NODE_SOCKET_PATH=~/pool/db/node.socket
-```
-#### Generating `Protocol Parameters` file
-> **Note**
-> Wait for the block-producing node to start syncing before continuing if you get this error message: `cardano-cli: Network.Socket.connect: : does not exist (No such file or directory)`
 
 
-
-
-#### Generating payment keys and addresses
+#### Generating Payment and Stake key pairs
 > **Warning**
-> **Critical Operational Security Advice:** payment and stake keys must be generated and used to build transactions in an cold environment. In other words, an air-gapped offline machine. Copy cardano-cli binary over to the offline machine and run the CLI method or mnemonic method. The only steps performed online in a hot environment are those steps that require live data. Namely the follow type of steps:
+> 🔥 **Critical Operational Security Advice:** Payment and Stake keys must be generated and used to build transactions in an cold environment. In other words, an air-gapped offline machine. Copy cardano-cli binary over to the offline machine and run the CLI method or mnemonic method. The only steps performed online in a hot environment are those steps that require live data. Namely the follow type of steps:
 > - querying the current slot tip
 > - querying the balance of an address
 > - submitting a transaction
 
+
+
 > **Note**
 > Payment keys are used to send and receive payments.
+> Stake keys are used to manage stake delegations.
+
+```
+###
+### On air-gapped offline machine,
+###
+cardano-cli address key-gen \
+--verification-key-file payment.vkey \
+--signing-key-file payment.skey
+```
+
+```
+###
+### On air-gapped offline machine,
+###
+cardano-cli stake-address key-gen \
+--verification-key-file stake.vkey \
+--signing-key-file stake.skey
+```
 
 
 
+#### Generating Payment and Stake addresses
+```
+cardano-cli address build \
+--payment-verification-key-file payment.vkey \
+--out-file payment.addr \
+--testnet-magic 1097911063
+```
+Run the following to find payment address.
+```
+cat payment.addr
+```
+
+> **Note**
+> Stake address CAN'T receive payments but will receive the rewards from participating in the protocol.
+
+```
+cardano-cli stake-address build \
+--stake-verification-key-file stake.vkey \
+--out-file stake.addr \
+--testnet-magic 1097911063
+```
+Run the following to find stake address.
+```
+cat stake.addr
+```
+
+
+
+#### Regenerate payment address
+Now that we have a stake address, it is time to regenerate a payment address. This time we use both the stake verification key and payment verification key to build the address. With this, both addresses will be linked together and associated with one another.
+```
+cardano-cli address build \
+--payment-verification-key-file payment.vkey \
+--stake-verification-key-file stake.vkey \
+--out-file paymentwithstake.addr \
+--testnet-magic 1097911063
+```
+
+
+
+### Generate stake pool keys
+> **Warning**
+> 🔥 **Cold keys must be generated and stored on air-gapped offline machine.**
 
 The block-producer node requires 3 keys as defined in the [Shelley ledger specs](https://hydra.iohk.io/build/2473732/download/1/ledger-spec.pdf):
 stake pool cold key (node.cert)
@@ -250,187 +321,33 @@ stake pool VRF key (vrf.skey)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## 4. Start Cardano Pool Node
+## 4. Start Cardano Block Generator Node
 Replace `<server IP address>` with IP Address of server that is runing on it.
 ```
 cardano-node run +RTS -N -A16m -qg -qb -RTS \
---topology relay/testnet-topology.json \
---database-path relay/db \
---socket-path relay/db/node.socket \
+--topology pool/testnet-topology.json \
+--database-path pool/db \
+--socket-path pool/db/node.socket \
 --host-addr <server IP address> \
 --port 3001 \
---config relay/testnet-config.json
+--config pool/testnet-config.json \
+--shelley-kes-key keys/kes.skey \
+--shelley-vrf-key keys/vrf.skey \
+--shelley-operational-certificate keys/node.cert
 ```
 
 
+```
+export CARDANO_NODE_SOCKET_PATH=~/pool/db/node.socket
+```
+
+
+#### Creating `Protocol Parameters` file
+> **Note**
+> Wait for the block-producing node to start syncing before continuing if you get this error message: `cardano-cli: Network.Socket.connect: : does not exist (No such file or directory)`
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Download and extract cardano-node
-------
-```
-cd
-mkdir cardano-node
-cd cardano-node
-wget https://hydra.iohk.io/build/12997298/download/1/cardano-node-1.34.0-linux.tar.gz \
-tar xvzf cardano-node-1.34.0-linux.tar.gz \
-rm -rf cardano-node-1.34.0-linux.tar.gz
-```
-
-Download config files
-------
-```
-cd
-mkdir pool
-cd pool
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-config.json \
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-byron-genesis.json \
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-shelley-genesis.json \
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-alonzo-genesis.json \
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-topology.json
-```
-___
-
-Change the file content of testnet-topology.json. *Replace `<relay IP>` with your relay server IP*
-------
-```
-nano testnet-topology.json
-```
-```
-{
-  "Producers": [
-    {
-      "addr": "<relay IP>",
-      "port": 3001,
-      "valency": 2
-    }
-  ]
-}
-```
-Use this commands to save and exit the file
-Ctrl+o
-Enter
-Ctrl+x
-___
-
-Add cardano-node and cardano-cli to environmetal variables
-------
-```
-cd
-mkdir ~/.local/bin
-cp -p cardano-node/cardano-node ~/.local/bin \
-cp -p cardano-node/cardano-cli ~/.local/bin \
-nano .bashrc
-```
-Add this line to the end of the file
-```
-export PATH="~/.local/bin:$PATH"
-```
-Use this commands to save and exit the file
-Ctrl+o
-Enter
-Ctrl+x
-```
-source .bashrc
-```
-___
-
-### To create key pairs, addresses and certifications:
-```
-cd
-mkdir keys
-cd keys
-```
-
-Payment key pair:
-------
-```
-cardano-cli address key-gen \
---verification-key-file payment.vkey \
---signing-key-file payment.skey
-```
-```
-cat payment.vkey
-```
-
-Payment address:
-------
-```
-cardano-cli address build \
---payment-verification-key-file payment.vkey \
---out-file payment.addr \
---testnet-magic 1097911063
-```
-```
-cat payment.addr
-```
-
-Stake key pair:
-------
-```
-cardano-cli stake-address key-gen \
---verification-key-file stake.vkey \
---signing-key-file stake.skey
-```
-
-Stake address:*This address CAN'T receive payments but will receive the rewards from participating in the protocol.*
-------
-```
-cardano-cli stake-address build \
---stake-verification-key-file stake.vkey \
---out-file stake.addr \
---testnet-magic 1097911063
-```
-```
-cat stake.addr
-```
-
-Regenerate payment address:
-------
-```
-cardano-cli address build \
---payment-verification-key-file payment.vkey \
---stake-verification-key-file stake.vkey \
---out-file paymentwithstake.addr \
---testnet-magic 1097911063
-```
 
 Generate Cold Keys and a Cold_counter:
 ------
