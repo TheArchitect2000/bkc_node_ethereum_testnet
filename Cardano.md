@@ -1,13 +1,13 @@
-# How to build cardano Relay server
+# How to build Cardano Relay Server
 
 
 
 ## 1. Prepare cardano-node and make it executable.
-### Step 1: Prepare a machine with the operating Ubuntu system.
+### Prepare a machine with the Ubuntu operating system.
 
 
 
-### Step 2: Update and install packages.
+### Update and install packages.
 ```
 sudo apt-get update -y
 sudo apt-get -y install build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5
@@ -15,7 +15,7 @@ sudo apt-get -y install build-essential pkg-config libffi-dev libgmp-dev libssl-
 
 
 
-### Step 3: Download and unpack the Hydra binaries of `cardano-node`.
+### Download and unpack the Hydra binaries of `cardano-node`.
 ```
 cd ~
 mkdir cardano-node
@@ -27,14 +27,14 @@ rm -rf cardano-node-1.34.0-linux.tar.gz
 
 
 
-### Step 4: Add `cardano-node` and `cardano-cli` to environmetal variables.
-#### Creat `~/.local/bin` path then copy/move `cardano-node` and `cardano-cli` to it.
+### Add `cardano-node` and `cardano-cli` to environmetal variables.
+#### Create `~/.local/bin` directory then copy/move `cardano-node` and `cardano-cli` to it.
 ```
 mkdir -p ~/.local/bin
 cp -p ~/cardano-node/cardano-node ~/.local/bin
 cp -p ~/cardano-cli/cardano-node ~/.local/bin
 ```
-*To Move `cardano-node` and `cardano-cli` files to new directory, replace `cp -p` with `mv`*
+*To Move files, replace `cp -p` with `mv`*
 
 
 
@@ -58,10 +58,10 @@ source .bashrc
 
 
 
-## 2. Download and setup config files for relay ndoe.
-### Step 1: Download `genesis`, `configuration` and `topology` files.
+## 2. Download and setup config files for relay node.
+### Download `genesis`, `configuration` and `topology` files.
 ```
-cd
+cd ~
 mkdir relay
 cd relay
 wget https://hydra.iohk.io/build/8111119/download/1/testnet-config.json \
@@ -73,11 +73,11 @@ wget https://hydra.iohk.io/build/8111119/download/1/testnet-topology.json
 
 
 
-### Step 2: Edite `testnet-topology.json`
-Replace `<block generator IP>` with block generator server IP Address.
+### Edite `testnet-topology.json`
 ```
 nano testnet-topology.json
 ```
+Replace `<block generator IP>` with block generator server IP Address.
 ```
 {
   "Producers": [
@@ -98,30 +98,8 @@ nano testnet-topology.json
 
 
 
-### Step 3: Add cardano-node and cardano-cli to environmetal variables
-------
-```
-cd
-mkdir ~/.local/bin
-cp -p cardano-node/cardano-node ~/.local/bin \
-cp -p cardano-node/cardano-cli ~/.local/bin \
-nano .bashrc
-```
-Add this line to the end of the file
-```
-export PATH="~/.local/bin:$PATH"
-```
-Use this commands to save and exit the file
-Ctrl+o
-Enter
-Ctrl+x
-```
-source .bashrc
-```
-___
-
-To run cardano relay: *replace `<server IP address>` with IP of your server*
-------
+## 3. Start Cardano Relay Node
+Replace `<server IP address>` with IP Address of server that is runing on it.
 ```
 cardano-node run +RTS -N -A16m -qg -qb -RTS \
 --topology relay/testnet-topology.json \
@@ -131,9 +109,188 @@ cardano-node run +RTS -N -A16m -qg -qb -RTS \
 --port 3001 \
 --config relay/testnet-config.json
 ```
-___
 
-## How to prepare cardano Block Generator server
+
+
+
+
+
+# How to build Cardano Block Generator Server
+
+
+
+## 1. Prepare cardano-node and make it executable.
+### Prepare a machine with the Ubuntu operating system.
+
+
+
+### Update and install packages.
+```
+sudo apt-get update -y
+sudo apt-get -y install build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5
+```
+
+
+
+### Download and unpack the Hydra binaries of `cardano-node`.
+```
+cd ~
+mkdir cardano-node
+cd cardano-node
+wget https://hydra.iohk.io/build/12997298/download/1/cardano-node-1.34.0-linux.tar.gz \
+tar xvzf cardano-node-1.34.0-linux.tar.gz \
+rm -rf cardano-node-1.34.0-linux.tar.gz
+```
+
+
+
+### Add `cardano-node` and `cardano-cli` to environmetal variables.
+#### Create `~/.local/bin` directory then copy/move `cardano-node` and `cardano-cli` to it.
+```
+mkdir -p ~/.local/bin
+cp -p ~/cardano-node/cardano-node ~/.local/bin
+cp -p ~/cardano-cli/cardano-node ~/.local/bin
+```
+*To Move files, replace `cp -p` with `mv`*
+
+
+
+#### Add `PATH` to last line of `.bashrc` to make cardano-node files executable.
+```
+cd ~
+nano .bashrc
+```
+```
+export PATH="~/.local/bin:$PATH"
+```
+*Use `Ctrl + o` and then press `Enter` to save and `Ctrl + x` to exit the file*
+
+
+
+#### Enable `PATH` in current terminal.
+```
+cd ~
+source .bashrc
+```
+
+
+
+## 2. Download and setup config files for pool node.
+### Download `genesis`, `configuration` and `topology` files.
+```
+cd ~
+mkdir pool
+cd pool
+wget https://hydra.iohk.io/build/8111119/download/1/testnet-config.json \
+wget https://hydra.iohk.io/build/8111119/download/1/testnet-byron-genesis.json \
+wget https://hydra.iohk.io/build/8111119/download/1/testnet-shelley-genesis.json \
+wget https://hydra.iohk.io/build/8111119/download/1/testnet-alonzo-genesis.json \
+wget https://hydra.iohk.io/build/8111119/download/1/testnet-topology.json
+```
+
+
+
+### Edite `testnet-topology.json`
+```
+nano testnet-topology.json
+```
+Replace `<relay IP>` with Relay server IP Address.
+```
+{
+  "Producers": [
+    {
+      "addr": "<relay IP>",
+      "port": 3001,
+      "valency": 2
+    }
+  ]
+}
+```
+*Use `Ctrl + o` and then press `Enter` to save and `Ctrl + x` to exit the file*
+
+
+
+## 3. Creating *Key Pairs*, *Addresses* and *Certifications*
+### Create a new directory to store files
+```
+cd ~
+mkdir keys
+cd keys
+```
+### Generating payment keys and addresses
+We need to create two sets of keys and addresses. One set to control our funds (make and receive payments) and one set to control our stake (to participate in the protocol delegating our stake)
+
+
+> **Note**
+> This is a note
+
+> **Warning**
+> This is a warning
+
+
+
+The block-producer node requires 3 keys as defined in the [Shelley ledger specs](https://hydra.iohk.io/build/2473732/download/1/ledger-spec.pdf):
+stake pool cold key (node.cert)
+stake pool hot key (kes.skey)
+stake pool VRF key (vrf.skey)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 4. Start Cardano Pool Node
+Replace `<server IP address>` with IP Address of server that is runing on it.
+```
+cardano-node run +RTS -N -A16m -qg -qb -RTS \
+--topology relay/testnet-topology.json \
+--database-path relay/db \
+--socket-path relay/db/node.socket \
+--host-addr <server IP address> \
+--port 3001 \
+--config relay/testnet-config.json
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Download and extract cardano-node
 ------
 ```
@@ -203,7 +360,7 @@ source .bashrc
 ```
 ___
 
-### To creat key pairs, addresses and certifications:
+### To create key pairs, addresses and certifications:
 ```
 cd
 mkdir keys
