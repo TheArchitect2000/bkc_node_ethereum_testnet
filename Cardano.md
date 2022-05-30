@@ -311,13 +311,95 @@ cardano-cli address build \
 ### Generate stake pool keys
 > **Warning**
 > 🔥 **Cold keys must be generated and stored on air-gapped offline machine.**
+> Make sure you are not online until you have put your **cold keys** in a secure storage.
 
 The block-producer node requires 3 keys as defined in the [Shelley ledger specs](https://hydra.iohk.io/build/2473732/download/1/ledger-spec.pdf):
-stake pool cold key (node.cert)
-stake pool hot key (kes.skey)
-stake pool VRF key (vrf.skey)
+- stake pool cold key (node.cert)
+- stake pool hot key (kes.skey)
+- stake pool VRF key (vrf.skey)
+
+#### Generate Cold Keys and a Cold_counter
+```
+cardano-cli node key-gen \
+--cold-verification-key-file cold.vkey \
+--cold-signing-key-file cold.skey \
+--operational-certificate-issue-counter-file cold.counter
+```
 
 
+
+#### Generate VRF Key pair
+```
+cardano-cli node key-gen-VRF \
+--verification-key-file vrf.vkey \
+--signing-key-file vrf.skey
+```
+
+
+
+#### Generate the KES Key pair
+```
+cardano-cli node key-gen-KES \
+--verification-key-file kes.vkey \
+--signing-key-file kes.skey
+```
+
+
+
+### Generate the Operational Certificate
+> **Note**
+> Wait for the relay node to sync before continuing.
+> Folowing commands (**Obtaining KESPeriod** and **Obtaining current slotNo**) must executed in the **Relay server terminal**.
+> If you get `cardano-cli: Network.Socket.connect: : does not exist (No such file or directory)` error message after sync, set `CARDANO_NODE_SOCKET_PATH` using command below
+
+```
+export CARDANO_NODE_SOCKET_PATH=~/relay/db/node.socket
+```
+
+
+
+#### Obtaining KESPeriod
+```
+cat ~/pool/testnet-shelley-genesis.json | grep KESPeriod
+```
+Output will be like below
+`> "slotsPerKESPeriod": 3600,`
+
+
+
+#### Obtaining current slotNo
+```
+cardano-cli query tip --testnet-magic 1097911063
+```
+`{
+    "blockNo": 27470,
+    "headerHash": "bd954e753c1131a6cb7ab3a737ca7f78e2477bea93db54511cedefe8899ebed0",
+    "slotNo": 656260
+}`
+
+
+
+#### Calculating the KES Period
+Replace *slotNo* and *slotsPerKESPeriod*
+```
+expr slotNo / slotsPerKESPeriod
+```
+`> 182`
+
+
+
+#### Generate the Operational Certificate file
+> **Note**
+> Must be generated on the air-gapped offline machine.
+> Using a cold storage such as USB flash drive, move `node.cert` to **Block Generator Server** `~/keys`.
+```
+cardano-cli node issue-op-cert \
+--kes-verification-key-file kes.vkey \
+--cold-signing-key-file cold.skey \
+--operational-certificate-issue-counter cold.counter \
+--kes-period 182 \
+--out-file node.cert
+```
 
 
 
@@ -337,75 +419,15 @@ cardano-node run +RTS -N -A16m -qg -qb -RTS \
 ```
 
 
+
+#### Creating `Protocol Parameters` file
+> **Note**
+> Wait for the block-producing node to start syncing before continuing if you get this error message: `cardano-cli: Network.Socket.connect: : does not exist (No such file or directory)`
+> If you get `cardano-cli: Network.Socket.connect: : does not exist (No such file or directory)` error message after sync, set `CARDANO_NODE_SOCKET_PATH` using command below
+
 ```
 export CARDANO_NODE_SOCKET_PATH=~/pool/db/node.socket
 ```
 
 
-#### Creating `Protocol Parameters` file
-> **Note**
-> Wait for the block-producing node to start syncing before continuing if you get this error message: `cardano-cli: Network.Socket.connect: : does not exist (No such file or directory)`
 
-
-
-
-Generate Cold Keys and a Cold_counter:
-------
-```
-cardano-cli node key-gen \
---cold-verification-key-file cold.vkey \
---cold-signing-key-file cold.skey \
---operational-certificate-issue-counter-file cold.counter
-```
-
-Generate VRF Key pair:
-------
-```
-cardano-cli node key-gen-VRF \
---verification-key-file vrf.vkey \
---signing-key-file vrf.skey
-```
-
-Generate the KES Key pair:
-------
-```
-cardano-cli node key-gen-KES \
---verification-key-file kes.vkey \
---signing-key-file kes.skey
-```
-
-Generate the Operational Certificate:
-------
-```
-cat testnet-shelley-genesis.json | grep KESPeriod
-cardano-cli query tip --testnet-magic 1097911063
-```
-*replace slotNo and slotsPerKESPeriod*
-```
-expr slotNo / slotsPerKESPeriod
-```
-*in my test it was 27*
-
-```
-cardano-cli node issue-op-cert \
---kes-verification-key-file kes.vkey \
---cold-signing-key-file cold.skey \
---operational-certificate-issue-counter cold.counter \
---kes-period 27 \
---out-file node.cert
-```
-
-To run cardano block generator: *replace `<server IP address>` with IP of your server*
-------
-```
-cardano-node run +RTS -N -A16m -qg -qb -RTS \
---topology pool/testnet-topology.json \
---database-path pool/db \
---socket-path pool/db/node.socket \
---host-addr <server IP address> \
---port 3001 \
---config pool/testnet-config.json \
---shelley-kes-key keys/kes.skey \
---shelley-vrf-key keys/vrf.skey \
---shelley-operational-certificate keys/node.cert
-```
