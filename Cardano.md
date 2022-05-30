@@ -1,7 +1,7 @@
 # Cardano stake pool
 ###### How to build cardano Relay server
 
-1. Prepare cardano-node and make it executable
+1. Prepare cardano-node and make it executable.
 Step 1: Prepare a machine with the operating Ubuntu system.
 
 Step 2: Update and install packages.
@@ -44,8 +44,7 @@ cd ~
 source .bashrc
 ```
 
-2. Download and setup config files for relay
-------
+2. Download and setup config files for relay.
 Step 1: Download `genesis`, `configuration` and `topology` files.
 ```
 cd
