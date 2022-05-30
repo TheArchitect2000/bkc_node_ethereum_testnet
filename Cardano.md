@@ -217,15 +217,27 @@ cd ~
 mkdir keys
 cd keys
 ```
-### Generating payment keys and addresses
-We need to create two sets of keys and addresses. One set to control our funds (make and receive payments) and one set to control our stake (to participate in the protocol delegating our stake)
 
+```
+export CARDANO_NODE_SOCKET_PATH=~/pool/db/node.socket
+```
+#### Generating `Protocol Parameters` file
+> **Note**
+> Wait for the block-producing node to start syncing before continuing if you get this error message: `cardano-cli: Network.Socket.connect: : does not exist (No such file or directory)`
+
+
+
+
+#### Generating payment keys and addresses
+> **Warning**
+> **Critical Operational Security Advice:** payment and stake keys must be generated and used to build transactions in an cold environment. In other words, an air-gapped offline machine. Copy cardano-cli binary over to the offline machine and run the CLI method or mnemonic method. The only steps performed online in a hot environment are those steps that require live data. Namely the follow type of steps:
+> - querying the current slot tip
+> - querying the balance of an address
+> - submitting a transaction
 
 > **Note**
-> This is a note
+> Payment keys are used to send and receive payments.
 
-> **Warning**
-> This is a warning
 
 
 
