@@ -1,7 +1,9 @@
-# Cardano stake pool
+# Cardano Stake Pool
+<sub>These are steps to create *Cardano Stake Pool*.</sub>
+
 ## How to build cardano Relay server
 
-### Prepare cardano-node and make it executable.
+### 1. Prepare cardano-node and make it executable.
 #### Step 1: Prepare a machine with the operating Ubuntu system.
 
 #### Step 2: Update and install packages.
@@ -10,7 +12,7 @@ sudo apt-get update -y
 sudo apt-get -y install build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5
 ```
 
-Step 3: Download and unpack the Hydra binaries of `cardano-node`.
+#### Step 3: Download and unpack the Hydra binaries of `cardano-node`.
 ```
 cd ~
 mkdir cardano-node
@@ -20,7 +22,7 @@ tar xvzf cardano-node-1.34.0-linux.tar.gz \
 rm -rf cardano-node-1.34.0-linux.tar.gz
 ```
 
-Step 4: creat and copy / move `cardano-node` and `cardano-cli` to `~/.local/bin`.
+#### Step 4: creat and copy / move `cardano-node` and `cardano-cli` to `~/.local/bin`.
 ```
 mkdir -p ~/.local/bin
 cp -p ~/cardano-node/cardano-node ~/.local/bin
@@ -28,7 +30,7 @@ cp -p ~/cardano-cli/cardano-node ~/.local/bin
 ```
 *To Move `cardano-node` and `cardano-cli` files to new directory, replace `cp -p` with `mv`*
 
-Step 5: Add `PATH` to last line of `.bashrc` to creat cardano-node executable files.
+#### Step 5: Add `PATH` to last line of `.bashrc` to creat cardano-node executable files.
 ```
 cd ~
 nano .bashrc
@@ -38,14 +40,14 @@ export PATH="~/.local/bin:$PATH"
 ```
 *Use `Ctrl + o` and then press `Enter` to save and `Ctrl + x` to exit the file*
 
-Step 6: Enable `PATH` in current terminal.
+#### Step 6: Enable `PATH` in current terminal.
 ```
 cd ~
 source .bashrc
 ```
 
-2. Download and setup config files for relay.
-Step 1: Download `genesis`, `configuration` and `topology` files.
+### 2. Download and setup config files for relay ndoe.
+#### Step 1: Download `genesis`, `configuration` and `topology` files.
 ```
 cd
 mkdir relay
