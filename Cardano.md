@@ -2,9 +2,9 @@
 ## How to build cardano Relay server
 
 ### Prepare cardano-node and make it executable.
-Step 1: Prepare a machine with the operating Ubuntu system.
+#### Step 1: Prepare a machine with the operating Ubuntu system.
 
-Step 2: Update and install packages.
+#### Step 2: Update and install packages.
 ```
 sudo apt-get update -y
 sudo apt-get -y install build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5
