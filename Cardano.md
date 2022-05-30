@@ -1,8 +1,3 @@
-<header>
-<H1>Cardano Stake Pool </H1>
-<H3>These are steps to create Cardano Stake Pool.</H3>
-</header>
-
 ## How to build cardano Relay server
 
 ### 1. Prepare cardano-node and make it executable.
@@ -47,6 +42,8 @@ export PATH="~/.local/bin:$PATH"
 cd ~
 source .bashrc
 ```
+
+
 
 ### 2. Download and setup config files for relay ndoe.
 #### Step 1: Download `genesis`, `configuration` and `topology` files.
