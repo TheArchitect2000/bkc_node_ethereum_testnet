@@ -429,6 +429,12 @@ cardano-node run +RTS -N -A16m -qg -qb -RTS \
 ```
 export CARDANO_NODE_SOCKET_PATH=~/pool/db/node.socket
 ```
+To Generate `Protocol Parameters` file:
+```
+ cardano-cli query protocol-parameters \
+ --testnet-magic 1097911063 \
+ --out-file protocol.json
+```
 
 
 ## 5. Register Stake Pool with Metadata
@@ -454,3 +460,54 @@ Change `Pool_Name`, `Description of The pool`, `Ticker_Name`, `http://Relay Serv
 
 Store the file in the URL of you control. For example https://stakepoolURL.com/pool_metadata.json .
 Also it is possible to use a GIST in Github to store the definitions. For GIST file add `/raw` to the end of Github GIST URL and use https://t.ly or other Short Links Creator to make Short Link. Ensure that the Stake pool metadata consists of at most 512 bytes, with the URL being less than 65 characters long.
+
+Example: 
+- GIST URL https://gist.githubusercontent.com/gramezan/c1d5eee514acc5e36d05d09280dfae60/raw
+- t.ly URL https://t.ly/y9dv
+
+
+
+#### Get the hash of metadata file
+```
+cardano-cli stake-pool metadata-hash --pool-metadata-file <(curl -s -L -k https://t.ly/y9dv)
+```
+Output will be like `> 13dd1d128bd1a1d1283bd5f38c8de49659f89accb31e5399c61e428576ecb186`
+
+
+
+### Generate Stake pool registration certificate
+```
+cardano-cli stake-pool registration-certificate \
+--cold-verification-key-file cold.vkey \
+--vrf-verification-key-file vrf.vkey \
+--pool-pledge 100000000 \
+--pool-cost 500000000 \
+--pool-margin 0.00 \
+--pool-reward-account-verification-key-file stake.vkey \
+--pool-owner-stake-verification-key-file stake.vkey \
+--testnet-magic 1097911063 \
+--pool-relay-ipv4 185.110.190.37 \
+--pool-relay-port 3001 \
+--metadata-url https://t.ly/y9dv \
+--metadata-hash 13dd1d128bd1a1d1283bd5f38c8de49659f89accb31e5399c61e428576ecb186 \
+--out-file pool-registration.cert
+```
+
+|Parameter | Explanation | Sample|
+| -------- |:-----------:| ------|
+|cold-verification-key-file | verification cold key| cold.vkey|
+|vrf-verification-key-file | verification VRS |key| vrf.vkey|
+|pool-pledge | pledge lovelace | 100000000|
+|pool-cost | operational costs per epoch lovelace | 500000000|
+|pool-margin | share of total ada rewards that the operator takes, must be from 0.00 to 1.00 | 0.15 (15%)|
+|pool-reward-account-verification-key-file | verification staking key for the rewards | stake.vkey|
+|pool-owner-staking-verification-key-file | verification staking keys for the pool owners | stake.vkey|
+|pool-relay-ipv4 | relay node ip address | 185.110.190.37|
+|pool-relay-port | port | 3001|
+|metadata-url | url of your json file | https://t.ly/y9dv |
+|metadata-hash | the hash of pools json metadata file | 13dd1d128bd1a1d1283bd5f38c8de49659f89accb31e5399c61e428576ecb186|
+|out-file | output file to write the certificate to | pool-registration.cert|
+
+> **Note**
+> You can use a different key for the rewards, and you can provide more than one owner key if there were multiple owners who share the pledge.
+> protocol.json file contain `"minPoolCost": 340000000`, `"stakeAddressDeposit": 2000000` and `"stakePoolDeposit": 500000000`.
