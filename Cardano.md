@@ -674,3 +674,135 @@ cardano-cli stake-address delegation-certificate \
 This creates a delegation certificate which delegates fund from all stake addresses associated with key stake.vkey to the pool belonging to cold key cold.vkey. If we had used different staking keys for the pool owners in the first step, we would need to create delegation certificates for all of them instead.
 
 
+### Submit the pool certificate and delegation certificate to the blockchain
+#### Query the UTXO
+To finde TxHash of address
+```
+cardano-cli query utxo \
+--address $(cat payment.addr) \
+--testnet-magic 1097911063
+```
+Output 
+
+```
+                           TxHash                                 TxIx        Amount
+--------------------------------------------------------------------------------------
+c738a7a07f6aafd3dee874d0a883d752db71fb3bc2c14616ea2d34256e845053     0        1000000000 lovelace + TxOutDatumNone
+```
+
+
+#### Draft the transaction
+```
+cardano-cli transaction build-raw \
+--tx-in c738a7a07f6aafd3dee874d0a883d752db71fb3bc2c14616ea2d34256e845053#0 \
+--tx-out $(cat paymentwithstake.addr)+0 \
+--ttl 0 \
+--fee 0 \
+--out-file tx.raw \
+--certificate-file pool-registration.cert \
+--certificate-file delegation.cert
+```
+Replace `c738a7a07f6aafd3dee874d0a883d752db71fb3bc2c14616ea2d34256e845053` in `--tx-in` with **TxHash** and **TxIx** with number in `--tx-in #number`.
+
+
+
+#### Calculate fees and deposit
+This transaction has only 1 input (the UTXO used to pay the transaction fee) and 1 output (our `paymentwithstake.addr` to which we are sending the change).
+```
+cardano-cli transaction calculate-min-fee \
+--tx-body-file tx.raw \
+--tx-in-count 1 \
+--tx-out-count 1 \
+--testnet-magic 1097911063 \
+--witness-count 1 \
+--byron-witness-count 0 \
+--protocol-params-file protocol.json
+```
+Output `> 184685 Lovelace`.
+
+
+
+We have to pay a deposit for the stake pool registration. The deposit amount is specified in the genesis file and in `protocol.json` under `stakeAddressDeposit`:
+```
+...
+"poolDeposit": 500000000
+...
+```
+
+
+
+If we had 1000 ada (can be found in Query the UTXO `Amount`), to calculate the change to send back to `payment.addr`:
+```
+expr 1000000000 - 184685 - 500000000
+```
+Output `499815315`.
+
+
+
+#### Determine the TTL (Time To Live) for the transaction
+```
+cardano-cli query tip --testnet-magic 1097911063
+```
+Output `{
+    "era": "Alonzo",
+    "syncProgress": "100.00",
+    "hash": "bfb3aa34cae0ad2cb72eaa2e5a2059b73d7c1029250e68f712cf76cc15093419",
+    "epoch": 207,
+    "slot": 59189349,
+    "block": 3581656
+}`
+
+```expr 59189349 + 1200```
+Output`> 59190549`.
+So our TTL is 59190549
+
+
+
+#### Submit the certificate with a transaction
+```
+cardano-cli transaction build-raw \
+--tx-in c738a7a07f6aafd3dee874d0a883d752db71fb3bc2c14616ea2d34256e845053#0 \
+--tx-out $(cat paymentwithstake.addr)+499815315 \
+--ttl 59190549 \
+--fee 171485 \
+--certificate-file pool-registration.cert \
+--certificate-file delegation.cert \
+--out-file tx.raw
+```
+
+
+
+#### Signing the transaction
+```
+cardano-cli transaction sign \
+--tx-body-file tx.raw \
+--signing-key-file payment.skey \
+--signing-key-file stake.skey \
+--signing-key-file cold.skey \
+--testnet-magic 1097911063 \
+--out-file tx.signed
+```
+
+
+
+#### submiting the transaction
+```
+cardano-cli transaction submit \
+--tx-file tx.signed \
+--testnet-magic 1097911063
+```
+
+
+
+### Verifying Stake Pool Operation
+```
+cardano-cli stake-pool id --cold-verification-key-file $HOME/cold-keys/node.vkey --output-format hex > stakepoolid.txt
+```
+```
+cat stakepoolid.txt
+```
+
+verify it's included in the blockchain.
+```
+cardano-cli query stake-snapshot --stake-pool-id $(cat stakepoolid.txt) --testnet-magic 1097911063 
+```
