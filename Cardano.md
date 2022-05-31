@@ -510,4 +510,4 @@ cardano-cli stake-pool registration-certificate \
 
 > **Note**
 > You can use a different key for the rewards, and you can provide more than one owner key if there were multiple owners who share the pledge.
-> protocol.json file contain `"minPoolCost": 340000000`, `"stakeAddressDeposit": 2000000` and `"stakePoolDeposit": 500000000`.
+> - protocol.json file contain `"minPoolCost": 340000000`, `"stakeAddressDeposit": 2000000` and `"stakePoolDeposit": 500000000`.
