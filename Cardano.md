@@ -796,9 +796,7 @@ cardano-cli transaction submit \
 
 ### Verifying Stake Pool Operation
 ```
-cardano-cli stake-pool id --cold-verification-key-file $HOME/cold-keys/node.vkey --output-format hex > stakepoolid.txt
-```
-```
+cardano-cli stake-pool id --cold-verification-key-file cold.vkey --output-format hex > stakepoolid.txt
 cat stakepoolid.txt
 ```
 
