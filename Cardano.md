@@ -494,7 +494,7 @@ cardano-cli stake-pool registration-certificate \
 ```
 
 |Parameter | Explanation | Sample|
-| -------- |:-----------:| ------|
+| -------- | ------------| -----|
 |cold-verification-key-file | verification cold key| cold.vkey|
 |vrf-verification-key-file | verification VRS |key| vrf.vkey|
 |pool-pledge | pledge lovelace | 100000000|
