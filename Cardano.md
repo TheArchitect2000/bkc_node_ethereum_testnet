@@ -437,7 +437,146 @@ To Generate `Protocol Parameters` file:
 ```
 
 
-## 5. Register Stake Pool with Metadata
+
+## 5. Register stake address in the blockchain
+we Created our stake keys and stake address, which allow us to participate in the protocol by delegating our stake or by creating a stake pool.
+We need to register our stake key in the blockchain.
+
+
+
+### Create a registration certificate
+```
+cardano-cli stake-address registration-certificate \
+--stake-verification-key-file stake.vkey \
+--out-file stake.cert
+```
+Once the certificate has been created, we must include it in a transaction to post it to the blockchain.
+
+
+
+### Draft transaction
+#### Query the UTXO
+To finde TxHash of address
+```
+cardano-cli query utxo \
+--address $(cat payment.addr) \
+--testnet-magic 1097911063
+```
+Output 
+
+```
+                           TxHash                                 TxIx        Amount
+--------------------------------------------------------------------------------------
+c738a7a07f6aafd3dee874d0a883d752db71fb3bc2c14616ea2d34256e845053     0        1000000000 lovelace + TxOutDatumNone
+```
+
+
+#### Draft the transaction
+```
+cardano-cli transaction build-raw \
+--tx-in c738a7a07f6aafd3dee874d0a883d752db71fb3bc2c14616ea2d34256e845053#0 \
+--tx-out $(cat paymentwithstake.addr)+0 \
+--ttl 0 \
+--fee 0 \
+--out-file tx.raw \
+--certificate-file stake.cert
+```
+Replace `c738a7a07f6aafd3dee874d0a883d752db71fb3bc2c14616ea2d34256e845053` in `--tx-in` with **TxHash** and **TxIx** with number in `--tx-in #number`.
+
+
+
+#### Calculate fees and deposit
+This transaction has only 1 input (the UTXO used to pay the transaction fee) and 1 output (our `paymentwithstake.addr` to which we are sending the change).
+```
+cardano-cli transaction calculate-min-fee \
+--tx-body-file tx.raw \
+--tx-in-count 1 \
+--tx-out-count 1 \
+--witness-count 1 \
+--byron-witness-count 0 \
+--testnet-magic 1097911063 \
+--protocol-params-file protocol.json
+```
+Output `> 171485 Lovelace`.
+
+
+
+In this transaction we have to not only pay transaction fees, but also include a deposit (which we will get back when we deregister the key) as stated in the protocol parameters:
+The deposit amount can be found in the `protocol.json` under `stakeAddressDeposit`:
+```
+...
+"stakeAddressDeposit": 2000000,
+...
+```
+
+
+
+If we had 1000 ada (can be found in Query the UTXO `Amount`), to calculate the change to send back to `payment.addr`:
+```
+expr 1000000000 - 171485 - 2000000
+```
+Output `997828515`.
+
+
+
+#### Determine the TTL (Time To Live) for the transaction
+We need the CURRENT TIP of the blockchain, this is, the height of the last block produced. We are looking for the value of SlotNo
+```
+cardano-cli query tip --testnet-magic 1097911063
+```
+Output `{
+    "era": "Alonzo",
+    "syncProgress": "100.00",
+    "hash": "bfb3aa34cae0ad2cb72eaa2e5a2059b73d7c1029250e68f712cf76cc15093419",
+    "epoch": 207,
+    "slot": 59189349,
+    "block": 3581656
+}`
+So at this moment the tip is on block: 369215 .
+To build the transaction we need to specify the TTL (Time To Live), this is the block height limit for our transaction to be included in a block, if it is not in a block by that slot the transaction will be cancelled.
+From protocol.json we can find **slot per second**. If we had `1 slot per second`  and it take us 10 minutes to build the transaction, and that we want to give it another 10 minutes window to be included in a block. So we need 20 minutes or 1200 slots. So we add 1200 to the current tip.
+```expr 59189349 + 1200```
+Output`> 59190549`.
+So our TTL is 59190549
+
+
+
+#### Submit the certificate with a transaction
+```
+cardano-cli transaction build-raw \
+--tx-in c738a7a07f6aafd3dee874d0a883d752db71fb3bc2c14616ea2d34256e845053#0 \
+--tx-out $(cat paymentwithstake.addr)+997828515 \
+--ttl 59190549 \
+--fee 171485 \
+--out-file tx.raw \
+--certificate-file stake.cert
+```
+
+
+
+#### Signing the transaction
+This transaction has to be signed by both the payment signing key `payment.skey` and the stake signing key `stake.skey`; and includes the certificate `stake.cert`.
+```
+cardano-cli transaction sign \
+--tx-body-file tx.raw \
+--signing-key-file payment.skey \
+--signing-key-file stake.skey \
+--testnet-magic 1097911063 \
+--out-file tx.signed
+```
+
+
+
+#### submiting the transaction
+```
+cardano-cli transaction submit \
+--tx-file tx.signed \
+--testnet-magic 1097911063
+```
+stake key is now registered on the blockchain.
+
+
+## 6. Register Stake Pool with Metadata
 > **Note** **WARNING**: Generating the **stake pool registration certificate** and the **delegation certificate** requires the cold keys. You may want to generate these certificates in a local machine and then move theme to block generator server using cold storage. Take the proper security measures to avoid exposing the cold keys to the internet.
 
 
@@ -511,3 +650,27 @@ cardano-cli stake-pool registration-certificate \
 > **Note**
 > You can use a different key for the rewards, and you can provide more than one owner key if there were multiple owners who share the pledge.
 > - protocol.json file contain `"minPoolCost": 340000000`, `"stakeAddressDeposit": 2000000` and `"stakePoolDeposit": 500000000`.
+
+
+The `pool-registration.cert` file should look like this:
+```
+{
+    "type": "CertificateShelley",
+    "description": "Stake Pool Registration Certificate",
+    "cborHex": "8a03581c0e702bc8838307d35cc65111843a3296ea22e2861abb6743fc7944ef5820adb824c7fd1f97aea47ea7d145cb21eb44259ff6641350984ac2a4f79b7649c81a05f5e1001a1443fd00d81e820314581de0c30016fd86ae44258df0018acd14d53c2b1b97dc427326b5db383cb681581cc30016fd86ae44258df0018acd14d53c2b1b97dc427326b5db383cb6818400190bb944b96ebe25f6827168747470733a2f2f742e6c792f79396476582013dd1d128bd1a1d1283bd5f38c8de49659f89accb31e5399c61e428576ecb186"
+}
+```
+
+
+### Generate delegation certificate pledge
+We have to honor our pledge by delegating at least the pledged amount to our pool, so we have to create a delegation certificate to achieve this.
+```
+cardano-cli stake-address delegation-certificate \
+--stake-verification-key-file stake.vkey \
+--cold-verification-key-file cold.vkey \
+--out-file delegation.cert
+```
+
+This creates a delegation certificate which delegates fund from all stake addresses associated with key stake.vkey to the pool belonging to cold key cold.vkey. If we had used different staking keys for the pool owners in the first step, we would need to create delegation certificates for all of them instead.
+
+
