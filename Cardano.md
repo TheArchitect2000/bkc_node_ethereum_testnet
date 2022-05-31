@@ -362,8 +362,7 @@ export CARDANO_NODE_SOCKET_PATH=~/relay/db/node.socket
 ```
 cat ~/pool/testnet-shelley-genesis.json | grep KESPeriod
 ```
-Output will be like below
-`> "slotsPerKESPeriod": 3600,`
+Output will be similar to `> "slotsPerKESPeriod": 3600,`
 
 
 
@@ -371,7 +370,7 @@ Output will be like below
 ```
 cardano-cli query tip --testnet-magic 1097911063
 ```
-`{
+Output will be similar to `{
     "blockNo": 27470,
     "headerHash": "bd954e753c1131a6cb7ab3a737ca7f78e2477bea93db54511cedefe8899ebed0",
     "slotNo": 656260
@@ -385,13 +384,15 @@ Replace *slotNo* and *slotsPerKESPeriod*
 expr slotNo / slotsPerKESPeriod
 ```
 `> 182`
+> **Note**
+> `slotNo` and `Kes-period` will be different after times. Make sure to calculate them right before use.
 
 
 
 #### Generate the Operational Certificate file
 > **Note**
 > Must be generated on the air-gapped offline machine.
-> Using a cold storage such as USB flash drive, move `node.cert` to **Block Generator Server** `~/keys`.
+> Using a cold storage like a USB flash drive, move `node.cert` to **Block Generator Server** `~/keys`.
 ```
 cardano-cli node issue-op-cert \
 --kes-verification-key-file kes.vkey \
@@ -430,4 +431,26 @@ export CARDANO_NODE_SOCKET_PATH=~/pool/db/node.socket
 ```
 
 
+## 5. Register Stake Pool with Metadata
+> **Note** **WARNING**: Generating the **stake pool registration certificate** and the **delegation certificate** requires the cold keys. You may want to generate these certificates in a local machine and then move theme to block generator server using cold storage. Take the proper security measures to avoid exposing the cold keys to the internet.
 
+
+
+### Create pool's metadata file
+#### Creating a JSON file for pool's metadata
+```
+nano pool_metadata.json
+```
+Change `Pool_Name`, `Description of The pool`, `Ticker_Name`, `http://Relay Server IP` and save the file.
+```
+{
+"name": "Pool_Name",
+"description": "Description of The pool",
+"ticker": "Ticker_Name",
+"homepage": "http://Relay Server IP"
+}
+```
+*Use `Ctrl + o` and then press `Enter` to save and `Ctrl + x` to exit the file*
+
+Store the file in the URL of you control. For example https://stakepoolURL.com/pool_metadata.json .
+Also it is possible to use a GIST in Github to store the definitions. For GIST file add `/raw` to the end of Github GIST URL and use https://t.ly or other Short Links Creator to make Short Link. Ensure that the Stake pool metadata consists of at most 512 bytes, with the URL being less than 65 characters long.
